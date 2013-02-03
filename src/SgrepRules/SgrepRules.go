@@ -1,6 +1,7 @@
 package SgrepRules
 
 import "fmt"
+import "strings"
 
 /**
  Any rule that is contained in a .sgrep file should match the Rule interface.
@@ -84,10 +85,19 @@ But kept throwing an error.  Plus, found this doc:
 https://groups.google.com/forum/?fromgroups=#!topic/golang-nuts/DwFGXLYgatY
 */
 func ParseRule(single_line,dir_abs_path string, priority RulePriority)  Rule{
+
+	// ignore comments
+	comment_index := strings.Index(single_line,"#")
+	if comment_index != -1 {
+		single_line = single_line[0:comment_index]
+	}
+	single_line = strings.TrimSpace(single_line)
+	
+	// ignore blank lines
 	if single_line == "" {
 		return nil
 	}
-	
+
 	ex_rule := ExcludeRule{}
 	ex_rule.rule_path = dir_abs_path
 	ex_rule.priority_ = priority
