@@ -34,6 +34,8 @@ type Rule interface {
 	rule_location() string
 	// just pretty prints the rule's internal data
 	print_rule_data()
+
+	repr_rule_data() string
 	
 }
 
@@ -45,6 +47,15 @@ func PrintRuleList (rule_list [] Rule)  {
 		rule.print_rule_data()
 	}
 }
+
+func ReprRuleList (rule_list [] Rule) string {
+	str := ""
+	for _, rule := range rule_list {
+		str += rule.repr_rule_data() + "\n"
+	}
+	return str
+}
+
 
 
 /**
@@ -73,11 +84,16 @@ func (er ExcludeRule) type_of_rule() RuleType {
 }
 
 func (er ExcludeRule) print_rule_data() {
-
-	fmt.Println("ExcludeRule")
-	fmt.Println("\t" + er.original_rule_text)
-	fmt.Println("\t" + er.rule_path)
+	fmt.Println(er.repr_rule_data())
 }
+
+func (er ExcludeRule) repr_rule_data() string {
+	str := "ExcludeRule \n"
+	str += "\t" + er.original_rule_text + "\n"
+	str += "\t" + er.rule_path + "\n"
+	return str
+}
+
 
 /*
 This function originally returned an interface pointer.
