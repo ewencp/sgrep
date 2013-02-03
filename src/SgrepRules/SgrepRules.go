@@ -84,7 +84,7 @@ This function originally returned an interface pointer.
 But kept throwing an error.  Plus, found this doc:
 https://groups.google.com/forum/?fromgroups=#!topic/golang-nuts/DwFGXLYgatY
 */
-func ParseRule(single_line,dir_abs_path string, priority RulePriority)  Rule{
+func ParseRule(single_line,dir_abs_path string, priority RulePriority, line_no uint32)  Rule{
 
 	// ignore comments
 	comment_index := strings.Index(single_line,"#")

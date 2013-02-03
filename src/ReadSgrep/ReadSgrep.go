@@ -32,11 +32,14 @@ func ReadSgrepFile(
 
 	file_reader := bufio.NewReader(fi)
 	single_line := ""
+	var line_no uint32;
+	line_no = 0;
 	for {
+		line_no += 1
 		single_line, err =  file_reader.ReadString('\n')
 		if single_line != "" {
 			new_rule := SgrepRules.ParseRule(
-				single_line,dir_abs_path,priority)
+				single_line,dir_abs_path,priority,line_no)
 
 			if new_rule != nil {
 				// FIXME: I wonder if there's any
