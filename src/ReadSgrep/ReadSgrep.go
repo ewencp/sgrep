@@ -37,6 +37,25 @@ func GetRuleTree(current_dir string) *RuleTree {
 }
 
 
+func ProduceGrepArgs(rt *RuleTree) [] string {
+	var grep_args [] string
+	for _, sgrep_rule := range rt.cur_dir_rules {
+		grep_args = append(grep_args,sgrep_rule.Grep_arg_rule())
+	}
+
+	for _, subdir_tree := range rt.sub_directories {
+		new_args := ProduceGrepArgs(subdir_tree)
+		for _, additional_arg := range new_args {
+			grep_args = append(grep_args,additional_arg)
+		}
+
+	}
+
+	return grep_args
+}
+
+
+
 /**
 Mostly for debugging, prints all sgrep rules found from the root
 of the rule tree provided.
@@ -71,8 +90,6 @@ func indent_str(original string, how_much uint32)  string {
 	}
 	return indented
 }
-
-
 
 
 

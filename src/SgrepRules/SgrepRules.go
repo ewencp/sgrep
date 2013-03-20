@@ -2,6 +2,7 @@ package SgrepRules
 
 import "fmt"
 import "strings"
+import "path"
 
 /**
  Any rule that is contained in a .sgrep file should match the Rule interface.
@@ -24,6 +25,9 @@ type Rule interface {
 	// the higher priority.
 	priority () RulePriority
 
+	// returns 
+	Grep_arg_root_rule() string
+	Grep_arg_rule() string
 	
 	// For debugging:
 	
@@ -66,6 +70,15 @@ type ExcludeRule struct {
 	priority_ RulePriority
 	original_rule_text string
 }
+
+func (er ExcludeRule) Grep_arg_root_rule() string {
+	return "--exclude=" + er.original_rule_text
+}
+
+func (er ExcludeRule) Grep_arg_rule() string {
+	return "--exclude=" + path.Join(er.rule_path, er.original_rule_text)
+}
+
 
 func (er ExcludeRule) priority() RulePriority {
 	return er.priority_
