@@ -1,6 +1,5 @@
 package main
 
-import "fmt"
 import "ReadSgrep"
 import "os"
 import "os/exec"
@@ -69,18 +68,16 @@ func main() {
 	cmd := exec.Command(GREP_BIN_PATH,grep_arg_array...)	
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatal(err)
 	}
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatal(err)
 	}
 
 	err = cmd.Start()
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
 	go io.Copy(os.Stdout, stdout) 
 	go io.Copy(os.Stderr, stderr)
