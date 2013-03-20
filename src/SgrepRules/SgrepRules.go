@@ -66,14 +66,12 @@ type ExcludeRule struct {
 }
 
 func (er ExcludeRule) Grep_arg_root_rule() string {
-	return "--exclude=" + er.original_rule_text
+	return "--exclude=" + strings.TrimSpace(er.original_rule_text)
 }
 
 func (er ExcludeRule) Grep_arg_rule() string {
-	return "--exclude=" + path.Join(er.rule_path, er.original_rule_text)
+	return "--exclude=" + path.Join(er.rule_path, strings.TrimSpace(er.original_rule_text))
 }
-
-
 
 func (er ExcludeRule) text() string {
 	return er.original_rule_text
