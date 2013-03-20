@@ -17,4 +17,4 @@ man grep
 
 Examples
 ------------------
-sgrep "sgrep is great" ./*
+sgrep "sgrep is great" 
