@@ -31,7 +31,7 @@ type RuleTree struct {
 func GetRuleTree(current_dir string) *RuleTree {
 	root := new(RuleTree)
 	root.dir_name = current_dir
-	walk_down(current_dir,0,root)
+	walk_down(current_dir,root)
 
 	return root
 }
@@ -103,10 +103,10 @@ func indent_str(original string, how_much uint32)  string {
  FIXME: Does not handle cycles at all.
  */
 func walk_down(
-	current_dir string, priority SgrepRules.RulePriority, root *RuleTree){
+	current_dir string, root *RuleTree){
 
 	// determine my current rules
-	root.cur_dir_rules = ReadSgrepFile(current_dir, priority)
+	root.cur_dir_rules = ReadSgrepFile(current_dir)
 
 	file_dir_list, _ := ioutil.ReadDir(current_dir)
 
@@ -119,7 +119,7 @@ func walk_down(
 			new_leaf_dir_path := filepath.Join(current_dir,file_dir_node.Name())
 			new_leaf.dir_name = file_dir_node.Name()
 			root.sub_directories = append(root.sub_directories,new_leaf)
-			walk_down(new_leaf_dir_path,priority+1,new_leaf)
+			walk_down(new_leaf_dir_path,new_leaf)
 		}
 	}
 }
@@ -130,15 +130,11 @@ func walk_down(
  @param {String} dir_abs_path --- The file path relative to the current
  directory.  
 
- @param {SgrepRules.RulePriority} --- The current directory has a
- priority of 0.  Directories closer to the root have lower priorities.
- Directories further from the root have higher priorities.
-
  @returns{List of SgrepRules} --- All rules that were read from the
  .sgrep file located in dir_abs_path.
 */
 func ReadSgrepFile(
-	dir_abs_path string, priority SgrepRules.RulePriority) []  SgrepRules.Rule {
+	dir_abs_path string) []  SgrepRules.Rule {
 
 	var rules [] SgrepRules.Rule
 	
@@ -159,7 +155,7 @@ func ReadSgrepFile(
 		single_line, err =  file_reader.ReadString('\n')
 		if single_line != "" {
 			new_rule := SgrepRules.ParseRule(
-				single_line,dir_abs_path,priority,line_no)
+				single_line,dir_abs_path,line_no)
 
 			if new_rule != nil {
 				// FIXME: I wonder if there's any

@@ -15,15 +15,10 @@ import "path"
 type RuleType uint32
 const EXCLUDE = 0
 
-type RulePriority int32
-
 type Rule interface {
 
 	// Currently, just have exclude rules
 	type_of_rule() RuleType
-	// For two conflicting rules, choose to follow the one with
-	// the higher priority.
-	priority () RulePriority
 
 	// returns 
 	Grep_arg_root_rule() string
@@ -67,7 +62,6 @@ func ReprRuleList (rule_list [] Rule) string {
  */
 type ExcludeRule struct {
 	rule_path string
-	priority_ RulePriority
 	original_rule_text string
 }
 
@@ -80,9 +74,6 @@ func (er ExcludeRule) Grep_arg_rule() string {
 }
 
 
-func (er ExcludeRule) priority() RulePriority {
-	return er.priority_
-}
 
 func (er ExcludeRule) text() string {
 	return er.original_rule_text
@@ -113,7 +104,7 @@ This function originally returned an interface pointer.
 But kept throwing an error.  Plus, found this doc:
 https://groups.google.com/forum/?fromgroups=#!topic/golang-nuts/DwFGXLYgatY
 */
-func ParseRule(single_line,dir_abs_path string, priority RulePriority, line_no uint32)  Rule{
+func ParseRule(single_line,dir_abs_path string, line_no uint32)  Rule{
 
 	// ignore comments
 	comment_index := strings.Index(single_line,"#")
@@ -129,7 +120,6 @@ func ParseRule(single_line,dir_abs_path string, priority RulePriority, line_no u
 
 	ex_rule := ExcludeRule{}
 	ex_rule.rule_path = dir_abs_path
-	ex_rule.priority_ = priority
 	ex_rule.original_rule_text = single_line
 
 	return ex_rule
