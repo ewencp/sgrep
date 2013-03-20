@@ -139,6 +139,7 @@ func ReadSgrepFile(
 	var rules [] SgrepRules.Rule
 	
 	fi,err := os.Open(filepath.Join(dir_abs_path,".sgrep"))
+	
 	if err != nil {
 		// no .sgrep file in this folder
 		return rules

@@ -5,9 +5,10 @@ import "ReadSgrep"
 import "os"
 import "os/exec"
 import "io"
+import "os/user"
+import "log"
 
 // FIXME: probably more generic ways to do this (eg., for windows)
-var SGREP_ROOT_FILEPATH string = "~/"
 var GREP_BIN_PATH = "grep"
 
 /**
@@ -30,11 +31,16 @@ func merge_string_arrays (array_a,array_b []string) []string {
  as the master .sgrep file in home.
 */
 func grep_args_from_sgrep_files() [] string{
-	// sgrep_root_rule_list is a list of sgrep rules
+	// used to get the home directory of the user
+	usr, err := user.Current()
+	if err != nil {
+		log.Fatal( err )
+	}
+	
+	// sgrep_root_rule_list is a list of sgrep rules		
 	sgrep_root_rule_list := ReadSgrep.ReadSgrepFile(
-		SGREP_ROOT_FILEPATH)	
+		usr.HomeDir)
 	rule_tree := ReadSgrep.GetRuleTree(".")
-
 	
 	var grep_arg_array [] string
 	for _, sgrep_rule := range sgrep_root_rule_list {
@@ -59,7 +65,7 @@ func main() {
 
 	// search in the current directory
 	grep_arg_array = append(grep_arg_array, ".")
-	
+
 	cmd := exec.Command(GREP_BIN_PATH,grep_arg_array...)	
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
