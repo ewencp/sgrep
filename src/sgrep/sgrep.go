@@ -4,8 +4,8 @@ import "ReadSgrep"
 import "os"
 import "os/exec"
 import "io"
-import "os/user"
 import "log"
+import "fmt"
 
 // FIXME: probably more generic ways to do this (eg., for windows)
 var GREP_BIN_PATH = "grep"
@@ -30,25 +30,14 @@ func merge_string_arrays (array_a,array_b []string) []string {
  as the master .sgrep file in home.
 */
 func grep_args_from_sgrep_files() [] string{
-	// used to get the home directory of the user
-	usr, err := user.Current()
-	if err != nil {
-		log.Fatal( err )
-	}
 	
-	// sgrep_root_rule_list is a list of sgrep rules		
-	sgrep_root_rule_list := ReadSgrep.ReadSgrepFile(
-		usr.HomeDir)
 	rule_tree := ReadSgrep.GetRuleTree(".")
-	
 	var grep_arg_array [] string
-	for _, sgrep_rule := range sgrep_root_rule_list {
-		grep_arg_array = append(
-			grep_arg_array, sgrep_rule.Grep_arg_root_rule())
-	}
 
 	for _, grep_arg := range ReadSgrep.ProduceGrepArgs(rule_tree) {
-		grep_arg_array = append(grep_arg_array,grep_arg)
+		if grep_arg != "" {
+			grep_arg_array = append(grep_arg_array,grep_arg)
+		}
 	}
 
 	return grep_arg_array
@@ -65,6 +54,10 @@ func main() {
 	// search in the current directory
 	grep_arg_array = append(grep_arg_array, ".")
 
+	fmt.Println("\n\n")
+	fmt.Println(grep_arg_array)
+	fmt.Println("\n\n")	
+	
 	cmd := exec.Command(GREP_BIN_PATH,grep_arg_array...)	
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -77,7 +70,7 @@ func main() {
 
 	err = cmd.Start()
 	if err != nil {
-		log.Fatal(err)
+	 	log.Fatal(err)
 	}
 	go io.Copy(os.Stdout, stdout) 
 	go io.Copy(os.Stderr, stderr)

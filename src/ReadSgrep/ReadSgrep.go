@@ -8,6 +8,7 @@ import "bufio"
 import "io/ioutil"
 import "fmt"
 import "strings"
+import "log"
 
 type RuleTree struct {
 
@@ -33,7 +34,35 @@ func GetRuleTree(current_dir string) *RuleTree {
 	root.dir_name = current_dir
 	walk_down(current_dir,root)
 
-	return root
+	fs_root_rt := walk_up (current_dir,root)
+	return fs_root_rt
+}
+
+/**
+ * From directory listed by current_dir, walk down to base
+ * directory, appending to rule tree along the way.  Eventually,
+ * returns RuleTree pointer pointing at /
+ */
+func walk_up(current_dir string, rt * RuleTree) * RuleTree {
+	abs_path, err := filepath.Abs(current_dir)
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	abs_parent_path := filepath.Dir(abs_path)
+	
+	if abs_path == filepath.Dir(abs_parent_path){
+		// got to the base of the file system		
+		return rt
+	}
+
+	parent_dir := filepath.Join(current_dir,"..")
+	
+	below_rt := new(RuleTree)
+	below_rt.dir_name = parent_dir
+	below_rt.sub_directories = append(below_rt.sub_directories,rt)
+	below_rt.cur_dir_rules = ReadSgrepFile(parent_dir,true)
+	return walk_up(parent_dir,below_rt)
 }
 
 
@@ -106,8 +135,10 @@ func walk_down(
 	current_dir string, root *RuleTree){
 
 	// determine my current rules
-	root.cur_dir_rules = ReadSgrepFile(current_dir)
+	root.cur_dir_rules = ReadSgrepFile(current_dir,false)
 
+	fmt.Println("Looking for sgrep file in " + current_dir)
+	
 	file_dir_list, _ := ioutil.ReadDir(current_dir)
 
 	var file_dir_node os.FileInfo
@@ -134,7 +165,7 @@ func walk_down(
  .sgrep file located in dir_abs_path.
 */
 func ReadSgrepFile(
-	dir_abs_path string) []  SgrepRules.Rule {
+	dir_abs_path string,read_from_parent_dir bool) []  SgrepRules.Rule {
 
 	var rules [] SgrepRules.Rule
 	
@@ -156,7 +187,7 @@ func ReadSgrepFile(
 		single_line, err =  file_reader.ReadString('\n')
 		if single_line != "" {
 			new_rule := SgrepRules.ParseRule(
-				single_line,dir_abs_path,line_no)
+				single_line,dir_abs_path,line_no,read_from_parent_dir)
 
 			if new_rule != nil {
 				// FIXME: I wonder if there's any
