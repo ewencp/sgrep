@@ -171,8 +171,8 @@ func (er ExcludeRule) Grep_arg_rule() string {
 		// the rule was not gathered from a parent directory,
 		// but rather the directory from which sgrep was run
 		// or a subdirectory of that directory.
-		return "--exclude=" + path.Join(
-			er.rule_path, strings.TrimSpace(er.original_rule_text))	
+		return path.Join(
+			er.rule_path, strings.TrimSpace(er.original_rule_text))
 	}
 	
 	// algorithm: Start with rule statement.  Deal with two cases:
@@ -227,15 +227,14 @@ func (er ExcludeRule) Grep_arg_rule() string {
 		if begins_with_wildcard(file_string) {
 			break
 		}
-		
-		
+			
 		if (dir == remaining_rule) {
 			return ""
 		}
 		remaining_rule = dir;
 	}
 
-	return "--exclude=" + rule_to_use
+	return rule_to_use
 }
 
 

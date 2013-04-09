@@ -136,8 +136,6 @@ func walk_down(
 
 	// determine my current rules
 	root.cur_dir_rules = ReadSgrepFile(current_dir,false)
-
-	fmt.Println("Looking for sgrep file in " + current_dir)
 	
 	file_dir_list, _ := ioutil.ReadDir(current_dir)
 

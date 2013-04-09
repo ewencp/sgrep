@@ -5,31 +5,18 @@ import "os"
 import "os/exec"
 import "io"
 import "log"
-import "fmt"
+
 
 // FIXME: probably more generic ways to do this (eg., for windows)
 var GREP_BIN_PATH = "grep"
+var FIND_BIN_PATH = "find"
 
-/**
- If array_a = ['a','b'] and array_b = ['c','d'], returns
- ['a','b','c','d']
-*/
-func merge_string_arrays (array_a,array_b []string) []string {
-	var merged_array[] string
-	for _, str := range array_a {
-		merged_array = append(merged_array,str)
-	}
-	for _, str := range array_b {
-		merged_array = append(merged_array,str)
-	}
-	return merged_array
-}
 
 /**
  Produces grep args from all sgrep files in subdirectories as well
  as the master .sgrep file in home.
 */
-func grep_args_from_sgrep_files() [] string{
+func find_args_from_sgrep_files() [] string{
 	
 	rule_tree := ReadSgrep.GetRuleTree(".")
 	var grep_arg_array [] string
@@ -46,19 +33,34 @@ func grep_args_from_sgrep_files() [] string{
 
 func main() {
 	// read sgrep files
-	grep_arg_array := grep_args_from_sgrep_files()
-	// make the query recursive
-	grep_arg_array = append(grep_arg_array,"-R")
-	grep_arg_array = merge_string_arrays(os.Args[1:],grep_arg_array)
+	exclude_rule_list := find_args_from_sgrep_files()
+	var arg_array [] string
 
-	// search in the current directory
-	grep_arg_array = append(grep_arg_array, ".")
-
-	fmt.Println("\n\n")
-	fmt.Println(grep_arg_array)
-	fmt.Println("\n\n")	
+	if len(exclude_rule_list) == 0 {
+		// FIXME: wildcard is not os agnostic
+		arg_array = append(arg_array,".","-path","*")
+	}else {
+		arg_array = append(arg_array,".")
+		for index, element := range exclude_rule_list {
+			arg_array = append(arg_array,"-path")
+			arg_array = append(arg_array,"./" + element)
+			if index != len(exclude_rule_list) -1 {
+				arg_array = append(arg_array, "-o")
+			}
+		}
+		
+		arg_array = append(arg_array,"-prune","-o")
+	}
+	// tell to execute grep 
+	arg_array = append(arg_array,"-exec", GREP_BIN_PATH)
+	// ... searching with args passed into the command line
+	arg_array = append(arg_array,os.Args[1:]...)
+	// pass -H to grep (telling it to display filename and
+	// matching line), {} for taking arguments from find, and ';'
+	// to end exec statement.
+	arg_array = append(arg_array,"-H","{}",";")
 	
-	cmd := exec.Command(GREP_BIN_PATH,grep_arg_array...)	
+	cmd := exec.Command(FIND_BIN_PATH,arg_array...)		
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		log.Fatal(err)
