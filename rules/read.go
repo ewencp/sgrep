@@ -12,7 +12,7 @@ import "log"
 type RuleTree struct {
 
 	// the rules contained in a single folder
-	cur_dir_rules [] Rule
+	cur_dir_rules []Rule
 
 	// not the absolute path.  just the name of the folder
 	// relative to its parent folder.
@@ -20,7 +20,7 @@ type RuleTree struct {
 
 	// additional folders to scan through with their rule
 	// subtrees.
-	sub_directories [] *RuleTree
+	sub_directories []*RuleTree
 }
 
 /**
@@ -31,9 +31,9 @@ type RuleTree struct {
 func GetRuleTree(current_dir string) *RuleTree {
 	root := new(RuleTree)
 	root.dir_name = current_dir
-	walk_down(current_dir,root)
+	walk_down(current_dir, root)
 
-	fs_root_rt := walk_up (current_dir,root)
+	fs_root_rt := walk_up(current_dir, root)
 	return fs_root_rt
 }
 
@@ -42,39 +42,38 @@ func GetRuleTree(current_dir string) *RuleTree {
  * directory, appending to rule tree along the way.  Eventually,
  * returns RuleTree pointer pointing at /
  */
-func walk_up(current_dir string, rt * RuleTree) * RuleTree {
+func walk_up(current_dir string, rt *RuleTree) *RuleTree {
 	abs_path, err := filepath.Abs(current_dir)
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	abs_parent_path := filepath.Dir(abs_path)
-	
-	if abs_path == filepath.Dir(abs_parent_path){
+
+	if abs_path == filepath.Dir(abs_parent_path) {
 		// got to the base of the file system		
 		return rt
 	}
 
-	parent_dir := filepath.Join(current_dir,"..")
-	
+	parent_dir := filepath.Join(current_dir, "..")
+
 	below_rt := new(RuleTree)
 	below_rt.dir_name = parent_dir
-	below_rt.sub_directories = append(below_rt.sub_directories,rt)
-	below_rt.cur_dir_rules = ReadSgrepFile(parent_dir,true)
-	return walk_up(parent_dir,below_rt)
+	below_rt.sub_directories = append(below_rt.sub_directories, rt)
+	below_rt.cur_dir_rules = ReadSgrepFile(parent_dir, true)
+	return walk_up(parent_dir, below_rt)
 }
 
-
-func ProduceGrepArgs(rt *RuleTree) [] string {
-	var grep_args [] string
+func ProduceGrepArgs(rt *RuleTree) []string {
+	var grep_args []string
 	for _, sgrep_rule := range rt.cur_dir_rules {
-		grep_args = append(grep_args,sgrep_rule.Grep_arg_rule())
+		grep_args = append(grep_args, sgrep_rule.Grep_arg_rule())
 	}
 
 	for _, subdir_tree := range rt.sub_directories {
 		new_args := ProduceGrepArgs(subdir_tree)
 		for _, additional_arg := range new_args {
-			grep_args = append(grep_args,additional_arg)
+			grep_args = append(grep_args, additional_arg)
 		}
 
 	}
@@ -82,17 +81,15 @@ func ProduceGrepArgs(rt *RuleTree) [] string {
 	return grep_args
 }
 
-
-
 /**
 Mostly for debugging, prints all sgrep rules found from the root
 of the rule tree provided.
 */
-func  PrettyPrint (rt *RuleTree) {
+func PrettyPrint(rt *RuleTree) {
 	fmt.Println(rt.pretty_print_helper())
 }
 
-func (rt *RuleTree) pretty_print_helper ( ) string {
+func (rt *RuleTree) pretty_print_helper() string {
 
 	str := "***" + rt.dir_name + "***\n"
 	rule_str := ReprRuleList(rt.cur_dir_rules)
@@ -108,34 +105,32 @@ func (rt *RuleTree) pretty_print_helper ( ) string {
 }
 
 /**
- Helper function: indents a string with the number of tabs
- specified by how_much.  */
-func indent_str(original string, how_much uint32)  string {
+Helper function: indents a string with the number of tabs
+specified by how_much.  */
+func indent_str(original string, how_much uint32) string {
 	indented := ""
-	split := strings.Split(original,"\n")
+	split := strings.Split(original, "\n")
 	for _, line_text := range split {
 		indented += "\n\t" + line_text
 	}
 	return indented
 }
 
-
-
 /**
 
- Look for .sgrep files in current_dir and read all of its
- subdirectories looking for .sgrep files as well.
+Look for .sgrep files in current_dir and read all of its
+subdirectories looking for .sgrep files as well.
 
- FIXME: probably a way to cull running through certain directories early.
+FIXME: probably a way to cull running through certain directories early.
 
- FIXME: Does not handle cycles at all.
- */
+FIXME: Does not handle cycles at all.
+*/
 func walk_down(
-	current_dir string, root *RuleTree){
+	current_dir string, root *RuleTree) {
 
 	// determine my current rules
-	root.cur_dir_rules = ReadSgrepFile(current_dir,false)
-	
+	root.cur_dir_rules = ReadSgrepFile(current_dir, false)
+
 	file_dir_list, _ := ioutil.ReadDir(current_dir)
 
 	var file_dir_node os.FileInfo
@@ -144,30 +139,28 @@ func walk_down(
 		if file_dir_node.IsDir() {
 			// recurse, looking for rules in this folder
 			new_leaf := new(RuleTree)
-			new_leaf_dir_path := filepath.Join(current_dir,file_dir_node.Name())
+			new_leaf_dir_path := filepath.Join(current_dir, file_dir_node.Name())
 			new_leaf.dir_name = file_dir_node.Name()
-			root.sub_directories = append(root.sub_directories,new_leaf)
-			walk_down(new_leaf_dir_path,new_leaf)
+			root.sub_directories = append(root.sub_directories, new_leaf)
+			walk_down(new_leaf_dir_path, new_leaf)
 		}
 	}
 }
 
-
-
 /**
- @param {String} dir_abs_path --- The file path relative to the current
- directory.  
+@param {String} dir_abs_path --- The file path relative to the current
+directory.  
 
- @returns{List of Rules} --- All rules that were read from the
- .sgrep file located in dir_abs_path.
+@returns{List of Rules} --- All rules that were read from the
+.sgrep file located in dir_abs_path.
 */
 func ReadSgrepFile(
-	dir_abs_path string,read_from_parent_dir bool) []  Rule {
+	dir_abs_path string, read_from_parent_dir bool) []Rule {
 
-	var rules [] Rule
-	
-	fi,err := os.Open(filepath.Join(dir_abs_path,".sgrep"))
-	
+	var rules []Rule
+
+	fi, err := os.Open(filepath.Join(dir_abs_path, ".sgrep"))
+
 	if err != nil {
 		// no .sgrep file in this folder
 		return rules
@@ -177,25 +170,25 @@ func ReadSgrepFile(
 
 	file_reader := bufio.NewReader(fi)
 	single_line := ""
-	var line_no uint32;
-	line_no = 0;
+	var line_no uint32
+	line_no = 0
 	for {
 		line_no += 1
-		single_line, err =  file_reader.ReadString('\n')
+		single_line, err = file_reader.ReadString('\n')
 		if single_line != "" {
 			new_rule := ParseRule(
-				single_line,dir_abs_path,line_no,read_from_parent_dir)
+				single_line, dir_abs_path, line_no, read_from_parent_dir)
 
 			if new_rule != nil {
 				// FIXME: I wonder if there's any
 				// overhead from using slices in this
 				// way.  eg, copies all elements over
 				// again.
-				rules = append(rules,new_rule)
+				rules = append(rules, new_rule)
 			}
 		}
-		
-		if (err == io.EOF){
+
+		if err == io.EOF {
 			break
 		}
 	}
