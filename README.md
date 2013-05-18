@@ -22,52 +22,52 @@ to exclude from searching through.  For instance, to avoid sgrep-ing
 through a file, "hello.txt", in PWD_DIR, one could write a .sgrep file
 in PWD_DIR with the contents:
 
-hello.txt
+    hello.txt
 
 To avoid searching somefile sub_dir_hello.txt in PWD_DIR/SUB_DIR, one
 could either add a .sgrep file in PWD_DIR/SUB_DIR with the contents
 
-hello.txt
+    hello.txt
 
 or could add a rule to his/her .sgrep file in PWD_DIR that says:
 
-SUB_DIR/hello.txt
+    SUB_DIR/hello.txt
 
 With either of these rules, sgrep would still search through any file
 named "hello.txt" that was not directly in SUB_DIR, eg.,
 PWD_DIR/hello.txt, PWD_DIR/SUB_DIR/SUB_SUB_DIR/hello.txt, or
 PWD_DIR/OTHER_SUB_DIR/hello.txt.
 
-sgrep also matches wildcards.  For instance, to prevent matching any 
+sgrep also matches wildcards.  For instance, to prevent matching any
 files that end in "pyc", use the rule
 
-*pyc
+    *pyc
 
 sgrep also includes rules derived from parent directories.  As an
 example, for a .sgrep file in PARENT_DIR (where PARENT_DIR is the
 parent directory of PWD_DIR) containing:
 
-PWD_DIR/hello.txt
+    PWD_DIR/hello.txt
 
 running sgrep from PWD_DIR will skip PWD_DIR/hello.txt (but will not
 skip PWD_DIR/SUB_DIR/hello.txt).  The rules for wildcard matching from
 parent directories are a little involved.  For a rule specified in a
 distant parent directory like the following
 
-/a/*/c/*/PWD_DIR/*/hello.txt
+    /a/*/c/*/PWD_DIR/*/hello.txt
 
 in a file system organized as follows:
 
-/a/b/c/PARENT_DIR/PWD_DIR/
+    /a/b/c/PARENT_DIR/PWD_DIR/
 
 sgrep, will take the most specific part of the rule that it matches
 and use that as the rule.  Ie, sgrep will apply the rule:
 
-*/hello.txt
+    */hello.txt
 
 Instead of the rule:
 
-*/c/PWD_DIR/*/hello.txt
+    */c/PWD_DIR/*/hello.txt
 
 You can add comments to sgrep files by prefixing the line with '#'.
 
@@ -86,5 +86,8 @@ differences:
 
 Examples
 ------------------
-sgrep "sgrep is great"  --- Searches for any instances of the phrase
-"sgrep is great" in subdirectories, subject to .sgrep file rules.
+
+Search for any instances of the phrase "sgrep is great" in
+subdirectories, subject to .sgrep file rules:
+
+    sgrep "sgrep is great"
