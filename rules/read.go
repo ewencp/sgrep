@@ -1,6 +1,5 @@
-package ReadSgrep
+package rules
 
-import "SgrepRules"
 import "os"
 import "path/filepath"
 import "io"
@@ -13,7 +12,7 @@ import "log"
 type RuleTree struct {
 
 	// the rules contained in a single folder
-	cur_dir_rules [] SgrepRules.Rule
+	cur_dir_rules [] Rule
 
 	// not the absolute path.  just the name of the folder
 	// relative to its parent folder.
@@ -96,7 +95,7 @@ func  PrettyPrint (rt *RuleTree) {
 func (rt *RuleTree) pretty_print_helper ( ) string {
 
 	str := "***" + rt.dir_name + "***\n"
-	rule_str := SgrepRules.ReprRuleList(rt.cur_dir_rules)
+	rule_str := ReprRuleList(rt.cur_dir_rules)
 	str += indent_str(rule_str, 1)
 
 	for _, subtree := range rt.sub_directories {
@@ -159,13 +158,13 @@ func walk_down(
  @param {String} dir_abs_path --- The file path relative to the current
  directory.  
 
- @returns{List of SgrepRules} --- All rules that were read from the
+ @returns{List of Rules} --- All rules that were read from the
  .sgrep file located in dir_abs_path.
 */
 func ReadSgrepFile(
-	dir_abs_path string,read_from_parent_dir bool) []  SgrepRules.Rule {
+	dir_abs_path string,read_from_parent_dir bool) []  Rule {
 
-	var rules [] SgrepRules.Rule
+	var rules [] Rule
 	
 	fi,err := os.Open(filepath.Join(dir_abs_path,".sgrep"))
 	
@@ -184,7 +183,7 @@ func ReadSgrepFile(
 		line_no += 1
 		single_line, err =  file_reader.ReadString('\n')
 		if single_line != "" {
-			new_rule := SgrepRules.ParseRule(
+			new_rule := ParseRule(
 				single_line,dir_abs_path,line_no,read_from_parent_dir)
 
 			if new_rule != nil {

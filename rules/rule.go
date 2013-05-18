@@ -1,4 +1,4 @@
-package SgrepRules
+package rules
 
 import "fmt"
 import "strings"

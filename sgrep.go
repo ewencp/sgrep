@@ -1,11 +1,10 @@
 package main
 
-import "ReadSgrep"
 import "os"
 import "os/exec"
 import "io"
 import "log"
-
+import "github.com/sgrep/sgrep/rules"
 
 // FIXME: probably more generic ways to do this (eg., for windows)
 var GREP_BIN_PATH = "grep"
@@ -17,11 +16,11 @@ var FIND_BIN_PATH = "find"
  as the master .sgrep file in home.
 */
 func find_args_from_sgrep_files() [] string{
-	
-	rule_tree := ReadSgrep.GetRuleTree(".")
+
+	rule_tree := rules.GetRuleTree(".")
 	var grep_arg_array [] string
 
-	for _, grep_arg := range ReadSgrep.ProduceGrepArgs(rule_tree) {
+	for _, grep_arg := range rules.ProduceGrepArgs(rule_tree) {
 		if grep_arg != "" {
 			grep_arg_array = append(grep_arg_array,grep_arg)
 		}
@@ -48,10 +47,10 @@ func main() {
 				arg_array = append(arg_array, "-o")
 			}
 		}
-		
+
 		arg_array = append(arg_array,"-prune","-o")
 	}
-	// tell to execute grep 
+	// tell to execute grep
 	arg_array = append(arg_array,"-exec", GREP_BIN_PATH)
 	// ... searching with args passed into the command line
 	arg_array = append(arg_array,os.Args[1:]...)
@@ -59,8 +58,8 @@ func main() {
 	// matching line), {} for taking arguments from find, and ';'
 	// to end exec statement.
 	arg_array = append(arg_array,"-H","{}",";")
-	
-	cmd := exec.Command(FIND_BIN_PATH,arg_array...)		
+
+	cmd := exec.Command(FIND_BIN_PATH,arg_array...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		log.Fatal(err)
@@ -74,7 +73,7 @@ func main() {
 	if err != nil {
 	 	log.Fatal(err)
 	}
-	go io.Copy(os.Stdout, stdout) 
+	go io.Copy(os.Stdout, stdout)
 	go io.Copy(os.Stderr, stderr)
 	cmd.Wait()
 }
